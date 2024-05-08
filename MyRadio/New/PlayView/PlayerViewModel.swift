@@ -18,22 +18,15 @@ class PlayerViewModel: ObservableObject {
     @Published var isPlaying = false
     // 收藏状态
     @Published var favorite: Bool = false
-    // 封面图
-    @Published private(set) var coverURL: URL?
-    // 节目名称
-    @Published private(set) var programName: String
-    // 电台名称
-    @Published private(set) var radioName: String?
-    // 播放链接
-    private(set) var playURLPath: String
     // 当前正在播放的节目
     @Published private(set) var program: Program?
+    // 电台名称
+    @Published private(set) var radioName: String = ""
     
     private var player: AVPlayer? { PlayerManager.manager.player }
     let times: [TimeInterval] = [5, 15, 30, 60, 120] // 定时时长
     @Published private(set) var remainingTime: TimeInterval = 0 // 定时器剩余播放 时间
     private var timer: Timer? // 定时器
-    private var radioDB: RadioDB? // 数据库对象
     
     // 电台id
     private(set) var radio_id: Int
@@ -42,14 +35,12 @@ class PlayerViewModel: ObservableObject {
     // 初始化
     init(radio_id: Int) {
         self.radio_id = radio_id
-        programName = ""
-        playURLPath = ""
     }
 
     
     // 设置播放源
     func setupPlaySource() {
-        guard let url = URL(string: playURLPath) else {
+        guard let url = URL(string: program?.rate24_ts_url ?? "") else {
             print("url invalid")
             return
         }
@@ -69,28 +60,6 @@ class PlayerViewModel: ObservableObject {
         updateNowPlayingInfo()
     }
     
-    // 获取数据库中的对象（没有就创建新的）
-    private func getRadioDB() {
-        let request = NSFetchRequest<RadioDB>(entityName: "RadioDB")
-        request.predicate = NSPredicate(format: "radio_id == %ld", radio_id)
-        let result = try? moc.fetch(request)
-        if result?.count == 0 {
-            guard let radio = NSEntityDescription.insertNewObject(forEntityName: "RadioDB", into: moc) as? RadioDB else {
-                return
-            }
-            radio.radio_id = Int16(radio_id)
-            radio.radio_cover = coverURL?.absoluteString ?? ""
-            radio.program_name = programName
-            radio.radio_urlPath = playURLPath
-            radio.favorite = favorite
-            radio.create_at = Date()
-            radio.radio_name = radioName
-            self.radioDB = radio
-        } else {
-            self.radioDB = result?.first
-            favorite = result?.first?.favorite ?? false
-        }
-    }
     
     // 获取数据库对象
     private func getProgramDB() -> ProgramDB? {
@@ -105,8 +74,8 @@ class PlayerViewModel: ObservableObject {
                 return nil
             }
             programDB.created_at = Date()
-            programDB.radio_id = Int16(radio_id)
-            programDB.program_id = Int16(program.id)
+            programDB.radio_id = Int64(radio_id)
+            programDB.program_id = Int64(program.id)
             programDB.favorite = false
             return programDB
         } else {
@@ -156,54 +125,46 @@ class PlayerViewModel: ObservableObject {
     
     // 随机播放
     func shuffle() {
-        guard let program = program else {
+        // 从 RadioDB表中随机数据
+        let request = NSFetchRequest<RadioDB>(entityName: "RadioDB")
+        request.predicate = NSPredicate(format: " radio_id != %ld", radio_id)
+        guard let radios = try? moc.fetch(request),
+              let radio = radios.randomElement() else {
             return
         }
-        let request = NSFetchRequest<ProgramDB>(entityName: "ProgramDB")
-        request.predicate = NSPredicate(format: "program_id != %ld", program.id)
-        guard let programs = try? moc.fetch(request),
-              let program = programs.randomElement() else {
-            return
-        }
-        replace(program: program)
+        getPlayingProgramFromApi(radio_id: Int(radio.radio_id))
     }
     
     // 上一曲
     func previous() {
-        guard let program = program else {
+        let request = NSFetchRequest<RadioDB>(entityName: "RadioDB")
+        guard let radios = try? moc.fetch(request) else {
             return
         }
-        let request = NSFetchRequest<ProgramDB>(entityName: "ProgramDB")
-        guard let programs = try? moc.fetch(request) else {
-            return
-        }
-        guard let index = programs.firstIndex(where: { $0.program_id == program.id }) else {
+        guard let index = radios.firstIndex(where: { $0.radio_id == radio_id }) else {
             return
         }
         if index <= 0 {
             return
         }
-        let prevPro = programs[index - 1]
-        replace(program: prevPro)
+        let prevRadio = radios[index - 1]
+        getPlayingProgramFromApi(radio_id: Int(prevRadio.radio_id))
     }
     
     // 下一曲
     func next() {
-        guard let program = program else {
+        let request = NSFetchRequest<RadioDB>(entityName: "RadioDB")
+        guard let radios = try? moc.fetch(request) else {
             return
         }
-        let request = NSFetchRequest<ProgramDB>(entityName: "ProgramDB")
-        guard let programs = try? moc.fetch(request) else {
+        guard let index = radios.firstIndex(where: { $0.radio_id == radio_id }) else {
             return
         }
-        guard let index = programs.firstIndex(where: { $0.program_id == program.id }) else {
+        if index >= radios.count - 1 {
             return
         }
-        if index >= programs.count - 1 {
-            return
-        }
-        let nextPro = programs[index + 1]
-        replace(program: nextPro)
+        let prevRadio = radios[index + 1]
+        getPlayingProgramFromApi(radio_id: Int(prevRadio.radio_id))
     }
     
     // 替换当前正在播放的节目
@@ -240,7 +201,7 @@ class PlayerViewModel: ObservableObject {
     // 更新通知栏显示
     private func updateNowPlayingInfo() {
         // download image
-        guard let coverURL = coverURL else {
+        guard let coverURL = URL(string: program?.back_pic_url ?? "") else {
             return
         }
         let urlRequest = URLRequest(url: coverURL)
@@ -250,8 +211,8 @@ class PlayerViewModel: ObservableObject {
             }
             let img = UIImage(data: data)
             let nowPlayingInfo = [
-                MPMediaItemPropertyTitle: self.radioName ?? "",
-                MPMediaItemPropertyArtist: self.programName,
+                MPMediaItemPropertyTitle: self.radioName,
+                MPMediaItemPropertyArtist: self.program?.program_name ?? "",
                 MPMediaItemPropertyArtwork: MPMediaItemArtwork(boundsSize: img!.size, requestHandler: { _ in
                     return img!
                 })
@@ -270,9 +231,10 @@ class PlayerViewModel: ObservableObject {
                 do {
                     let programe = try JSONDecoder().decode(Program.self, from: res.data)
                     self.program = programe
-                    self.programName = programe.program_name
-                    self.coverURL = URL(string: programe.back_pic_url)
-                    self.playURLPath = programe.rate24_ts_url
+                    let request = NSFetchRequest<RadioDB>(entityName: "RadioDB")
+                    request.predicate = NSPredicate(format: "radio_id == %ld", radio_id)
+                    let radios = try? self.moc.fetch(request)
+                    self.radioName = radios?.first?.radio_name ?? ""
                     self.setupPlaySource()
                 } catch {
                     print(error)
@@ -292,7 +254,7 @@ class PlayerViewModel: ObservableObject {
             guard let program = NSEntityDescription.insertNewObject(forEntityName: "ProgramDB", into: moc) as? ProgramDB else {
                 return nil
             }
-            program.radio_id = Int16(radio_id)
+            program.radio_id = Int64(radio_id)
             program.created_at = Date()
             program.favorite = false
             return program

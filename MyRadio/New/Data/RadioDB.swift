@@ -2,20 +2,15 @@
 //  RadioDB.swift
 //  MyRadio
 //
-//  Created by Aaron on 2024/5/3.
+//  Created by Aaron on 2024/5/8.
 //
 
-import CoreData
 import Foundation
+import CoreData
 
 @objc(RadioDB)
 class RadioDB: NSManagedObject {
-    @NSManaged var radio_id: Int16
-    @NSManaged var radio_urlPath: String
-    @NSManaged var radio_cover: String
-    @NSManaged var program_name: String
-    @NSManaged var favorite: Bool // 收藏
-    @NSManaged var create_at: Date
-    @NSManaged var update_at: Date
-    @NSManaged var radio_name: String?
+    @NSManaged var radio_id: Int64
+    @NSManaged var schedule_id: Int64
+    @NSManaged var radio_name: String
 }

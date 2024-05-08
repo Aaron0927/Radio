@@ -10,6 +10,9 @@ import SwiftUI
 struct PlayView: View {
     @ObservedObject private(set) var playViewModel: PlayerViewModel
     @ObservedObject var player: PlayerManager = PlayerManager.manager
+    private var program: Program? {
+        playViewModel.program
+    }
     var radio_id: Int
     
     init(radio_id: Int) {
@@ -22,7 +25,7 @@ struct PlayView: View {
             VStack {
                 Spacer(minLength: 24)
                 
-                AsyncImage(url: playViewModel.coverURL) { image in
+                AsyncImage(url: URL(string: program?.back_pic_url ?? "")) { image in
                     image
                         .resizable()
                         .resizable()
@@ -35,9 +38,9 @@ struct PlayView: View {
                 
                 Spacer(minLength: 24)
                 VStack(spacing: 8) {
-                    Text(playViewModel.radioName ?? "")
+                    Text(playViewModel.radioName)
                         .font(.system(size: 24))
-                    Text(playViewModel.programName)
+                    Text(program?.program_name ?? "--")
                         .font(.system(size: 16, weight: .semibold))
                 }
                 .foregroundStyle(Color.d_black)

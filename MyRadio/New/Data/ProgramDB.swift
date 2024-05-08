@@ -10,8 +10,8 @@ import CoreData
 
 @objc(ProgramDB)
 class ProgramDB: NSManagedObject {
-    @NSManaged var radio_id: Int16
-    @NSManaged var program_id: Int16
+    @NSManaged var radio_id: Int64
+    @NSManaged var program_id: Int64
     @NSManaged var program_name: String
     @NSManaged var back_pic_url: String
     @NSManaged var rate_url: String

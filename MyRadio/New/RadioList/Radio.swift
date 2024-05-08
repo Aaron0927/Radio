@@ -41,6 +41,7 @@ struct Radio: Codable, Identifiable {
 
 final class RadioListData: ObservableObject {
     @Published var radios: [Radio] = []
+    private let moc = DataController.shared.container.viewContext
     
     // 请求分类下的广播电台列表
     func getRadiosList(in category_id: Int) {
@@ -50,12 +51,40 @@ final class RadioListData: ObservableObject {
                 do {
                     let model = try JSONDecoder().decode(RadioModel.self, from: res.data)
                     self.radios = model.radios
+                    // 保存数据库中
+                    for radio in model.radios {
+                        let radioDB = self.getRadioDB(radio_id: Int64(radio.id))
+                        radioDB?.schedule_id = Int64(radio.schedule_id)
+                        radioDB?.radio_name = radio.radio_name
+                    }
+                    do {
+                        try self.moc.save()
+                    } catch {
+                        self.moc.rollback()
+                    }
                 } catch {
                     print(error)
                 }
             case let .failure(err):
                 print(err)
             }
+        }
+    }
+    
+    // 保存数据到数据库中
+    // 获取数据库对象
+    private func getRadioDB(radio_id: Int64) -> RadioDB? {
+        let request = NSFetchRequest<RadioDB>(entityName: "RadioDB")
+        request.predicate = NSPredicate(format: "radio_id == %ld", radio_id)
+        let result = try? moc.fetch(request)
+        if result?.count == 0 {
+            guard let radioDB = NSEntityDescription.insertNewObject(forEntityName: "RadioDB", into: moc) as? RadioDB else {
+                return nil
+            }
+            radioDB.radio_id = radio_id
+            return radioDB
+        } else {
+            return result?.first
         }
     }
 }

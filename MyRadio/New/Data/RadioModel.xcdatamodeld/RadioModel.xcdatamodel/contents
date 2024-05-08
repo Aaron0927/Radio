@@ -4,20 +4,17 @@
         <attribute name="back_pic_url" attributeType="String"/>
         <attribute name="created_at" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="favorite" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
-        <attribute name="program_id" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="program_id" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="program_name" attributeType="String"/>
-        <attribute name="radio_id" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="radio_id" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="rate_url" attributeType="String"/>
         <attribute name="updated_at" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <relationship name="radio" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="RadioDB" inverseName="programs" inverseEntity="RadioDB"/>
     </entity>
     <entity name="RadioDB" representedClassName="RadioDB" syncable="YES">
-        <attribute name="create_at" attributeType="Date" usesScalarValueType="NO"/>
-        <attribute name="favorite" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
-        <attribute name="program_name" attributeType="String"/>
-        <attribute name="radio_cover" attributeType="String"/>
-        <attribute name="radio_id" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
-        <attribute name="radio_name" optional="YES" attributeType="String"/>
-        <attribute name="radio_urlPath" optional="YES" attributeType="String"/>
-        <attribute name="update_at" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="radio_id" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="radio_name" attributeType="String"/>
+        <attribute name="schedule_id" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <relationship name="programs" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="ProgramDB" inverseName="radio" inverseEntity="ProgramDB"/>
     </entity>
 </model>
