@@ -99,7 +99,7 @@ struct PlayView: View {
                     NavigationLink {
 //                        ProgramListView(radio_id: playViewModel.radio_id)
                     } label: {
-                        Image("音乐菜单")
+                        Image(systemName: "list.bullet")
                             .resizable()
                             .aspectRatio(contentMode: .fit)
                             .frame(width: 32, height: 32)

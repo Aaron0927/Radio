@@ -13,8 +13,21 @@ struct MyRadioApp: App {
     
     var body: some Scene {
         WindowGroup {
-            RadioCategoryView()
-                .environment(\.managedObjectContext, dataController.container.viewContext)
+            TabView {
+                RadioCategoryView()
+                    .tabItem {
+                        Label("分类", systemImage: "square.grid.2x2.fill")
+                    }
+                Text("地区")
+                    .tabItem {
+                        Label("地区", systemImage: "location.fill")
+                    }
+                FavoriteListView()
+                    .tabItem {
+                        Label("收藏", systemImage: "heart.fill")
+                    }
+            }
+            .environment(\.managedObjectContext, dataController.container.viewContext)
         }
     }
 }
