@@ -37,7 +37,7 @@ enum XMNetworkType {
     case get_playing_program(radio_id: Int) // 获取某个电台正在广播的节目
     case provinces // 获取广播省市列表
     case radios(radio_type: Int, province_code: Int? = nil, page: Int = 1, count: Int = 20) // 获取广播电台省市列表
-    case schedules(radio_id: Int, weekday: Int) // 获取某个广播电台某一天的节目排期的列表
+    case schedules(radio_id: Int, weekday: Int?) // 获取某个广播电台某一天的节目排期的列表
     case cities(province_code: Int) // 获取某省份城市列表
     case get_radios_by_city(city_code: Int, page: Int = 1, count: Int = 20) // 获取某个城市下的电台列表
     case get_radios_by_ids(ids: String) // 根据电台ID，批量获取电台列表

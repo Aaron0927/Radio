@@ -34,3 +34,8 @@ extension Color {
         )
     }
 }
+
+extension Color {
+    // #171C26 #FFFFFF
+    static var d_black: Color { Color("black") }
+}

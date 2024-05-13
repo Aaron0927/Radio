@@ -97,7 +97,7 @@ struct PlayView: View {
                     }
 
                     NavigationLink {
-//                        ProgramListView(radio_id: playViewModel.radio_id)
+                        ProgramList(radio_id: radio_id)
                     } label: {
                         Image(systemName: "list.bullet")
                             .resizable()
