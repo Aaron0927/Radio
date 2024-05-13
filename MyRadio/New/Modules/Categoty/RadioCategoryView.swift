@@ -16,6 +16,9 @@ struct RadioCategoryView: View {
                 ForEach(data.categories) { category in
                     NavigationLink {
                         RadioListView(category_id: category.id)
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            .background(.red)
+                            .toolbar(.hidden, for: .tabBar)
                     } label: {
                         Text(category.radio_category_name)
                     }

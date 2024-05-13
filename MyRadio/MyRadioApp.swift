@@ -18,7 +18,7 @@ struct MyRadioApp: App {
                     .tabItem {
                         Label("分类", systemImage: "square.grid.2x2.fill")
                     }
-                Text("地区")
+                LocationCategoryView()
                     .tabItem {
                         Label("地区", systemImage: "location.fill")
                     }
