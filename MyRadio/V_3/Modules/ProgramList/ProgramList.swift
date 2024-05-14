@@ -53,12 +53,9 @@ enum Weekday: String, CaseIterable, Identifiable {
 
 struct ProgramList: View {
     @State private var schedules = [Schedule]()
-    private var radio_id: Int
     @State private var weekday: Weekday = .sunday
-    
-    init(radio_id: Int) {
-        self.radio_id = radio_id
-    }
+    @Environment(\.dismiss) var dismiss
+    @Binding var radio_id: Int
     
     var body: some View {
         VStack {
@@ -74,8 +71,9 @@ struct ProgramList: View {
             
             List {
                 ForEach(schedules) { schedule in
-                    NavigationLink(schedule.related_program.program_name) {
-                        PlayView(radio_id: radio_id)
+                    Button(schedule.related_program.program_name) {
+                        radio_id = schedule.radio_id
+                        dismiss()
                     }
                 }
             }
@@ -104,5 +102,6 @@ struct ProgramList: View {
 }
 
 #Preview {
-    ProgramList(radio_id: 1066)
+    @State var radio_id = 1066
+    return ProgramList(radio_id: $radio_id)
 }

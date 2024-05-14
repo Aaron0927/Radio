@@ -10,10 +10,11 @@ import SwiftUI
 struct PlayView: View {
     @ObservedObject private(set) var playViewModel: PlayerViewModel
     @ObservedObject var player: PlayerManager = PlayerManager.manager
+    @State private var showingSheet = false
     private var program: Program? {
         playViewModel.program
     }
-    var radio_id: Int
+    @State var radio_id: Int
     
     init(radio_id: Int) {
         self.radio_id = radio_id
@@ -96,14 +97,19 @@ struct PlayView: View {
                             .frame(width: 32, height: 32)
                     }
 
-                    NavigationLink {
-                        ProgramList(radio_id: radio_id)
-                    } label: {
+                    // 节目单
+                    Button(action: {
+                        showingSheet.toggle()
+                    }, label: {
                         Image(systemName: "list.bullet")
                             .resizable()
                             .aspectRatio(contentMode: .fit)
                             .frame(width: 32, height: 32)
+                    })
+                    .sheet(isPresented: $showingSheet) {
+                        ProgramList(radio_id: $radio_id)
                     }
+                    
                     // 定时关闭
                     Menu {
                         ForEach(playViewModel.times, id: \.self) { time in
