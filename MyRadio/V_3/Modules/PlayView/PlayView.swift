@@ -11,9 +11,6 @@ struct PlayView: View {
     @ObservedObject private(set) var playViewModel: PlayerViewModel
     @ObservedObject var player: PlayerManager = PlayerManager.manager
     @State private var showingSheet = false
-    private var program: Program? {
-        playViewModel.program
-    }
     @State var radio_id: Int
     
     init(radio_id: Int) {
@@ -26,7 +23,7 @@ struct PlayView: View {
             VStack {
                 Spacer(minLength: 24)
                 
-                AsyncImage(url: URL(string: program?.back_pic_url ?? "")) { image in
+                AsyncImage(url: URL(string: playViewModel.program?.back_pic_url ?? "")) { image in
                     image
                         .resizable()
                         .resizable()
@@ -41,7 +38,7 @@ struct PlayView: View {
                 VStack(spacing: 8) {
                     Text(playViewModel.radioName)
                         .font(.system(size: 24))
-                    Text(program?.program_name ?? "--")
+                    Text(playViewModel.program?.program_name ?? "--")
                         .font(.system(size: 16, weight: .semibold))
                 }
                 .foregroundStyle(Color.d_black)
@@ -89,7 +86,7 @@ struct PlayView: View {
                     
                     // 收藏
                     Button {
-                        playViewModel.favorite.toggle()
+                        playViewModel.favoriteRadio()
                     } label: {
                         Image(systemName: playViewModel.favorite ? "heart.fill" : "heart")
                             .resizable()
@@ -107,7 +104,7 @@ struct PlayView: View {
                             .frame(width: 32, height: 32)
                     })
                     .sheet(isPresented: $showingSheet) {
-                        ProgramList(radio_id: $radio_id)
+                        ProgramList(program: $playViewModel.program, radio_id: radio_id)
                     }
                     
                     // 定时关闭
@@ -132,9 +129,6 @@ struct PlayView: View {
             .onAppear(perform: {
                 playViewModel.getPlayingProgramFromApi(radio_id: radio_id)
             })
-            .onDisappear(perform: {
-                playViewModel.updateDBData()
-            })
             .navigationTitle("Now Playing")
         }
     }
@@ -158,5 +152,5 @@ struct PlayView: View {
 }
 
 #Preview {
-    PlayView(radio_id: 1065)
+    PlayView(radio_id: 56)
 }

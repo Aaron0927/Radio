@@ -57,6 +57,3 @@ struct CardView: View {
     }
 }
 
-#Preview {
-    CardView(radio: previewRadio())
-}

@@ -36,6 +36,3 @@ struct RadioCell: View {
     }
 }
 
-#Preview {
-    RadioCell(radio: previewRadio())
-}

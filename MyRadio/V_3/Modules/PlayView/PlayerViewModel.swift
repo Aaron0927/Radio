@@ -17,9 +17,13 @@ class PlayerViewModel: ObservableObject {
     // 播放状态
     @Published var isPlaying = false
     // 收藏状态
-    @Published var favorite: Bool = false
+    @Published private(set) var favorite: Bool = false
     // 当前正在播放的节目
-    @Published private(set) var program: Program?
+    @Published var program: Program? {
+        didSet {
+            self.setupPlaySource()
+        }
+    }
     // 电台名称
     @Published private(set) var radioName: String = ""
     
@@ -61,50 +65,6 @@ class PlayerViewModel: ObservableObject {
     }
     
     
-    // 获取数据库对象
-    private func getProgramDB() -> ProgramDB? {
-        guard let program = program else {
-            return nil
-        }
-        let request = NSFetchRequest<ProgramDB>(entityName: "ProgramDB")
-        request.predicate = NSPredicate(format: "radio_id == %ld && program_id == %ld", radio_id, program.id)
-        let result = try? moc.fetch(request)
-        if result?.count == 0 {
-            guard let programDB = NSEntityDescription.insertNewObject(forEntityName: "ProgramDB", into: moc) as? ProgramDB else {
-                return nil
-            }
-            programDB.created_at = Date()
-            programDB.radio_id = Int64(radio_id)
-            programDB.program_id = Int64(program.id)
-            programDB.favorite = false
-            return programDB
-        } else {
-            return result?.first
-        }
-    }
-    
-    // 更新数据状态并保持到数据库中
-    func updateDBData() {
-        guard let program = program,
-              let programDB = getProgramDB() else {
-            return
-        }
-        programDB.favorite = favorite
-        programDB.program_name = program.program_name
-        programDB.back_pic_url = program.back_pic_url
-        programDB.rate_url = program.rate24_ts_url
-        programDB.updated_at = Int64(program.updated_at)
-        
-        if !moc.hasChanges {
-            return
-        }
-        do {
-            try moc.save()
-        } catch {
-            moc.rollback()
-        }
-    }
-    
     // 播放
     func play() {
         isPlaying.toggle()
@@ -121,6 +81,21 @@ class PlayerViewModel: ObservableObject {
     func stop() {
         player?.pause()
         PlayerManager.manager.player = nil
+    }
+    
+    // 收藏当前电台
+    func favoriteRadio() {
+        favorite.toggle()
+        
+        // 更新数据
+        let request = NSFetchRequest<RadioDB>(entityName: "RadioDB")
+        request.predicate = NSPredicate(format: " radio_id == %ld", radio_id)
+        guard let radio = try? moc.fetch(request).first else {
+            return
+        }
+        
+        radio.favorite = favorite
+        try? moc.save()
     }
     
     // 随机播放
@@ -173,6 +148,40 @@ class PlayerViewModel: ObservableObject {
         getPlayingProgramFromApi(radio_id: Int(program.radio_id))
     }
     
+    // 从接口中请求整在播放的节目
+    func getPlayingProgramFromApi(radio_id: Int) {
+        self.radio_id = radio_id
+        XMNetwork.shared.provider.request(.get_playing_program(radio_id: radio_id)) { result in
+            switch result {
+            case .success(let res):
+                do {
+                    let programe = try JSONDecoder().decode(Program.self, from: res.data)
+                    self.program = programe
+                    if let radio = self.fetchRadioInfoFromDB(radio_id: radio_id) {
+                        self.radioName = radio.radio_name
+                        self.favorite = radio.favorite
+                    }
+                } catch {
+                    print(error)
+                }
+            case .failure(let err):
+                print(err)
+            }
+        }
+    }
+    
+    // 从数据库中查询电台信息
+    private func fetchRadioInfoFromDB(radio_id: Int) -> RadioDB? {
+        let request = NSFetchRequest<RadioDB>(entityName: "RadioDB")
+        request.predicate = NSPredicate(format: "radio_id == %ld", radio_id)
+        let radios = try? self.moc.fetch(request)
+        return radios?.first
+    }
+
+}
+
+// MARK: 锁屏播放信息
+extension PlayerViewModel {
     // 设置后台播放
     private func setupAudioSession() {
         do {
@@ -221,48 +230,6 @@ class PlayerViewModel: ObservableObject {
         }
         session.resume()
     }
-    
-    // 从接口中请求整在播放的节目
-    func getPlayingProgramFromApi(radio_id: Int) {
-        self.radio_id = radio_id
-        XMNetwork.shared.provider.request(.get_playing_program(radio_id: radio_id)) { result in
-            switch result {
-            case .success(let res):
-                do {
-                    let programe = try JSONDecoder().decode(Program.self, from: res.data)
-                    self.program = programe
-                    let request = NSFetchRequest<RadioDB>(entityName: "RadioDB")
-                    request.predicate = NSPredicate(format: "radio_id == %ld", radio_id)
-                    let radios = try? self.moc.fetch(request)
-                    self.radioName = radios?.first?.radio_name ?? ""
-                    self.setupPlaySource()
-                } catch {
-                    print(error)
-                }
-            case .failure(let err):
-                print(err)
-            }
-        }
-    }
-    
-    // 从数据库中获取节目
-    private func getProgramFromDB(radio_id: Int) -> ProgramDB? {
-        let request = NSFetchRequest<ProgramDB>(entityName: "ProgramDB")
-        request.predicate = NSPredicate(format: "radio_id == %ld", radio_id)
-        let result = try? moc.fetch(request)
-        if result?.count == 0 {
-            guard let program = NSEntityDescription.insertNewObject(forEntityName: "ProgramDB", into: moc) as? ProgramDB else {
-                return nil
-            }
-            program.radio_id = Int64(radio_id)
-            program.created_at = Date()
-            program.favorite = false
-            return program
-        } else {
-            return result?.first
-        }
-    }
-
 }
 
 // MARK: Timer

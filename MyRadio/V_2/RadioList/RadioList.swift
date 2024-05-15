@@ -32,6 +32,3 @@ struct RadioList: View {
     }
 }
 
-#Preview {
-    RadioList(category: previewCategory())
-}

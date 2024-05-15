@@ -55,7 +55,8 @@ struct ProgramList: View {
     @State private var schedules = [Schedule]()
     @State private var weekday: Weekday = .sunday
     @Environment(\.dismiss) var dismiss
-    @Binding var radio_id: Int
+    @Binding var program: Program?
+    var radio_id: Int
     
     var body: some View {
         VStack {
@@ -71,10 +72,20 @@ struct ProgramList: View {
             
             List {
                 ForEach(schedules) { schedule in
-                    Button(schedule.related_program.program_name) {
-                        radio_id = schedule.radio_id
+                    Button {
+                        if schedule.can_listen_back {
+                            print("\(schedule.related_program.program_name) can listen back")
+                        }
+                        program = schedule.related_program
                         dismiss()
+                    } label: {
+                        VStack(alignment: .leading, spacing: 10) {
+                            Text(schedule.related_program.program_name)
+                            Text("\(schedule.start_time)-\(schedule.end_time)")
+                                .font(.subheadline)
+                        }
                     }
+                    
                 }
             }
         }
@@ -102,6 +113,6 @@ struct ProgramList: View {
 }
 
 #Preview {
-    @State var radio_id = 1066
-    return ProgramList(radio_id: $radio_id)
+    @State var program: Program? = Program(id: 136853, program_name: "晚安", back_pic_url: "http://imagev2.xmcdn.com/group78/M05/77/E5/wKgO4F6Bl5qwmm5WAAByh38totg523.png!op_type=3&columns=640&rows=640", support_bitrates: [24, 64], rate24_aac_url: "http://live.xmcdn.com/live/56/24.m3u8", rate64_aac_url: "http://live.xmcdn.com/live/56/24.m3u8", rate24_ts_url: "http://live.xmcdn.com/live/56/24.m3u8", rate64_ts_url: "http://live.xmcdn.com/live/56/24.m3u8", updated_at: 1431913847000)
+    return ProgramList(program: $program, radio_id: 56)
 }

@@ -13,4 +13,5 @@ class RadioDB: NSManagedObject {
     @NSManaged var radio_id: Int64
     @NSManaged var schedule_id: Int64
     @NSManaged var radio_name: String
+    @NSManaged var favorite: Bool
 }

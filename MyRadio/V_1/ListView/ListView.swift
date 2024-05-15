@@ -70,11 +70,3 @@ struct ListView: View {
     }
 }
 
-#Preview {
-    let vm = ListViewModel(title: "国家台", radio_type: 1, province_code: nil)
-    vm.radios = previewRadios()
-    return NavigationView(content: {
-        ListView(viewModel: vm)
-            .navigationBarTitleDisplayMode(.inline)
-    })
-}

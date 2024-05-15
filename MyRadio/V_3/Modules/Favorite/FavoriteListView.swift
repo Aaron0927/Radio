@@ -14,6 +14,19 @@ struct FavoriteListView: View {
     
     var body: some View {
         NavigationStack {
+                contentView()
+                .navigationTitle("Favorite")
+        }
+        .onAppear(perform: {
+            getFavorits()
+        })
+    }
+    
+    @ViewBuilder
+    private func contentView() -> some View {
+        if radios.isEmpty {
+            Text("暂无收藏")
+        } else {
             List(radios, id: \.radio_id) { radio in
                 NavigationLink {
                     PlayView(radio_id: Int(radio.radio_id))
@@ -22,16 +35,13 @@ struct FavoriteListView: View {
                     Text(radio.radio_name)
                 }
             }
-            .navigationTitle("Favorite")
         }
-        .onAppear(perform: {
-            getFavorits()
-        })
     }
     
     // 获取数据库中收藏列表
     private func getFavorits() {
         let request = NSFetchRequest<RadioDB>(entityName: "RadioDB")
+        request.predicate = NSPredicate(format: "favorite == true")
         guard let radios = try? moc.fetch(request) else {
             return
         }

@@ -9,17 +9,35 @@ import SwiftUI
 
 struct CityRadiosView: View {
     @State private var radios = [Radio]()
+    @State private var searchText: String = ""
     var selectedSegment: Segment
     var province_code: Int?
     
+    private var searchResults: [Radio] {
+        if searchText.isEmpty {
+            return radios
+        } else {
+            return radios.filter({ $0.radio_name.contains(searchText) })
+        }
+    }
+    
     var body: some View {
         NavigationStack {
-            List(radios) { radio in
+            List(searchResults) { radio in
                 NavigationLink(radio.radio_name) {
                     PlayView(radio_id: radio.id)
                 }
             }
-            .listStyle(.insetGrouped)
+            .searchable(text: $searchText)
+            .toolbar(content: {
+                NavigationLink {
+                    if let radio = radios.randomElement() {
+                        PlayView(radio_id: radio.id)
+                    }
+                } label: {
+                    Image(systemName: "shuffle")
+                }
+            })
             .toolbar(.hidden, for: .tabBar)
             .onAppear(perform: {
                 requestRadios(radio_type: selectedSegment.type)
@@ -47,5 +65,7 @@ struct CityRadiosView: View {
 }
 
 #Preview {
-    CityRadiosView(selectedSegment: Segment.city)
+    NavigationStack {
+        CityRadiosView(selectedSegment: Segment.country)
+    }
 }

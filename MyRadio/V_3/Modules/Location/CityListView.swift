@@ -9,13 +9,23 @@ import SwiftUI
 
 struct CityListView: View {
     @State private var cities = [Province]()
+    @State private var searchText: String = ""
+    
+    private var searchResults: [Province] {
+        if searchText.isEmpty {
+            return cities
+        } else {
+            return cities.filter({ $0.province_name.contains(searchText) })
+        }
+    }
     
     var body: some View {
-        List(cities) { city in
+        List(searchResults) { city in
             NavigationLink(city.province_name) {
                 CityRadiosView(selectedSegment: Segment.city, province_code: city.province_code)
             }
         }
+        .searchable(text: $searchText)
         .onAppear(perform: {
             requestCities()
         })
@@ -39,5 +49,7 @@ struct CityListView: View {
 }
 
 #Preview {
-    CityListView()
+    NavigationStack {
+        CityListView()
+    }
 }

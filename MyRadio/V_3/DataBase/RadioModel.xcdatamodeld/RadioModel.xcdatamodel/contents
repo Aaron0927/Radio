@@ -12,6 +12,7 @@
         <relationship name="radio" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="RadioDB" inverseName="programs" inverseEntity="RadioDB"/>
     </entity>
     <entity name="RadioDB" representedClassName="RadioDB" syncable="YES">
+        <attribute name="favorite" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="radio_id" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="radio_name" attributeType="String"/>
         <attribute name="schedule_id" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
