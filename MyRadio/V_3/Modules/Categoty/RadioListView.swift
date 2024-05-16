@@ -25,7 +25,7 @@ struct RadioListView: View {
             ForEach(searchResults) { radio in
                 NavigationLink {
                     // 通过电台id获取电台下面的节目列表
-                    PlayView(radio_id: radio.id)
+                    PlayView(radio_id: radio.id, radio_name: radio.radio_name)
                 } label: {
                     VStack(alignment: .leading) {
                         Text(radio.radio_name)
@@ -38,7 +38,7 @@ struct RadioListView: View {
         .toolbar(content: {
             NavigationLink {
                 if let radio = radios.randomElement() {
-                    PlayView(radio_id: radio.id)
+                    PlayView(radio_id: radio.id, radio_name: radio.radio_name)
                 }
             } label: {
                 Image(systemName: "shuffle")

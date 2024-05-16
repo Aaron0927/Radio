@@ -25,14 +25,14 @@ struct CityRadiosView: View {
         NavigationStack {
             List(searchResults) { radio in
                 NavigationLink(radio.radio_name) {
-                    PlayView(radio_id: radio.id)
+                    PlayView(radio_id: radio.id, radio_name: radio.radio_name)
                 }
             }
             .searchable(text: $searchText)
             .toolbar(content: {
                 NavigationLink {
                     if let radio = radios.randomElement() {
-                        PlayView(radio_id: radio.id)
+                        PlayView(radio_id: radio.id, radio_name: radio.radio_name)
                     }
                 } label: {
                     Image(systemName: "shuffle")

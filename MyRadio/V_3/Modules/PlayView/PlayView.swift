@@ -9,13 +9,12 @@ import SwiftUI
 
 struct PlayView: View {
     @ObservedObject private(set) var playViewModel: PlayerViewModel
-    @ObservedObject var player: PlayerManager = PlayerManager.manager
     @State private var showingSheet = false
     @State var radio_id: Int
     
-    init(radio_id: Int) {
+    init(radio_id: Int, radio_name: String) {
         self.radio_id = radio_id
-        playViewModel = PlayerViewModel(radio_id: radio_id)
+        playViewModel = PlayerViewModel(radio_id: radio_id, radio_name: radio_name)
     }
     
     var body: some View {
@@ -36,7 +35,7 @@ struct PlayView: View {
                 
                 Spacer(minLength: 24)
                 VStack(spacing: 8) {
-                    Text(playViewModel.radioName)
+                    Text(playViewModel.radio_name)
                         .font(.system(size: 24))
                     Text(playViewModel.program?.program_name ?? "--")
                         .font(.system(size: 16, weight: .semibold))
@@ -46,54 +45,7 @@ struct PlayView: View {
                 
                 Spacer()
                 
-                HStack(spacing: 32) {
-                    Button(action: {
-                        playViewModel.previous()
-                    }, label: {
-                        Image(systemName: "backward.end.fill")
-                    })
-                    Button {
-                        if playViewModel.isPlaying {
-                            playViewModel.pause()
-                        } else {
-                            playViewModel.play()
-                        }
-                    } label: {
-                        Image(systemName: playViewModel.isPlaying ? "pause.fill" : "play.fill")
-                            .frame(width: 70, height: 70)
-                            .aspectRatio(contentMode: .fill)
-                    }
-                    Button {
-                        playViewModel.next()
-                    } label: {
-                        Image(systemName: "forward.end.fill")
-                    }
-                }
-                .frame(height: 70)
-                .foregroundStyle(Color.d_black)
-                
-                Spacer(minLength: 32)
-                HStack(spacing: 48) {
-                    // 随机播放
-                    Button(action: {
-                        playViewModel.shuffle()
-                    }, label: {
-                        Image(systemName: "shuffle")
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .frame(width: 32, height: 32)
-                    })
-                    
-                    // 收藏
-                    Button {
-                        playViewModel.favoriteRadio()
-                    } label: {
-                        Image(systemName: playViewModel.favorite ? "heart.fill" : "heart")
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .frame(width: 32, height: 32)
-                    }
-
+                HStack {
                     // 节目单
                     Button(action: {
                         showingSheet.toggle()
@@ -103,9 +55,25 @@ struct PlayView: View {
                             .aspectRatio(contentMode: .fit)
                             .frame(width: 32, height: 32)
                     })
+                    .frame(maxWidth: .infinity)
                     .sheet(isPresented: $showingSheet) {
                         ProgramList(program: $playViewModel.program, radio_id: radio_id)
                     }
+                    
+                    // 播放控制
+                    Button {
+                        if playViewModel.isPlaying {
+                            playViewModel.pause()
+                        } else {
+                            playViewModel.play()
+                        }
+                    } label: {
+                        Image(systemName: playViewModel.isPlaying ? "pause.fill" : "play.fill")
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(width: 32, height: 32)
+                    }
+                    .frame(maxWidth: .infinity)
                     
                     // 定时关闭
                     Menu {
@@ -116,20 +84,27 @@ struct PlayView: View {
                         }
                     } label: {
                         timerView()
+                            .frame(width: 32, height: 32)
                     }
+                    .frame(maxWidth: .infinity)
                 }
-                .frame(height: 32)
+                .padding(.horizontal, 20)
                 .foregroundStyle(Color.d_black)
                 
-                
-                
-                Spacer(minLength: 44)
-                
+                Spacer()
             }
             .onAppear(perform: {
                 playViewModel.getPlayingProgramFromApi(radio_id: radio_id)
             })
+            .navigationBarTitleDisplayMode(.inline)
             .navigationTitle("Now Playing")
+            .toolbar(content: {
+                Button(action: {
+                    playViewModel.favoriteRadio()
+                }, label: {
+                    Image(systemName: playViewModel.favorite ? "heart.fill" : "heart")
+                })
+            })
         }
     }
     
@@ -152,5 +127,7 @@ struct PlayView: View {
 }
 
 #Preview {
-    PlayView(radio_id: 56)
+    NavigationStack {
+        PlayView(radio_id: 1065, radio_name: "中国之声")
+    }
 }

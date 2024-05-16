@@ -1,21 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="22225" systemVersion="23E214" minimumToolsVersion="Automatic" sourceLanguage="Swift" usedWithSwiftData="YES" userDefinedModelVersionIdentifier="">
-    <entity name="ProgramDB" representedClassName="ProgramDB" syncable="YES">
-        <attribute name="back_pic_url" attributeType="String"/>
-        <attribute name="created_at" attributeType="Date" usesScalarValueType="NO"/>
-        <attribute name="favorite" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
-        <attribute name="program_id" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
-        <attribute name="program_name" attributeType="String"/>
-        <attribute name="radio_id" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
-        <attribute name="rate_url" attributeType="String"/>
-        <attribute name="updated_at" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
-        <relationship name="radio" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="RadioDB" inverseName="programs" inverseEntity="RadioDB"/>
-    </entity>
     <entity name="RadioDB" representedClassName="RadioDB" syncable="YES">
         <attribute name="favorite" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="radio_id" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="radio_name" attributeType="String"/>
-        <attribute name="schedule_id" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
-        <relationship name="programs" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="ProgramDB" inverseName="radio" inverseEntity="ProgramDB"/>
+        <attribute name="sort" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
     </entity>
 </model>
