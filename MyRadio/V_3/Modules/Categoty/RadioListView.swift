@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct RadioListView: View {
+    @State private var isLoading = false
     @State private var radios: [Radio] = []
     @State private var searchText: String = ""
     var category_id: Int
@@ -34,7 +35,13 @@ struct RadioListView: View {
                 }
             }
         }
-        .searchable(text: $searchText)
+        .searchable(text: $searchText, placement: .navigationBarDrawer)
+        .loadingState($isLoading)
+        .emptyState(searchResults.isEmpty && !isLoading, emptyContent: {
+            Text("No Radios")
+                .font(.title3)
+                .foregroundColor(Color.secondary)
+        })
         .toolbar(content: {
             NavigationLink {
                 if let radio = radios.randomElement() {
@@ -51,7 +58,9 @@ struct RadioListView: View {
     
     // 请求分类下的广播电台列表
     private func getRadiosList(in category_id: Int) {
+        isLoading = true
         XMNetwork.shared.provider.request(.get_radios_by_category(id: category_id)) { result in
+            self.isLoading = false
             switch result {
             case let .success(res):
                 do {

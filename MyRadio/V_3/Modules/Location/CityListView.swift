@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct CityListView: View {
+    @State private var isLoading: Bool = false
     @State private var cities = [Province]()
     @State private var searchText: String = ""
     
@@ -20,12 +21,20 @@ struct CityListView: View {
     }
     
     var body: some View {
-        List(searchResults) { city in
-            NavigationLink(city.province_name) {
-                CityRadiosView(selectedSegment: Segment.city, province_code: city.province_code)
+        List {
+            ForEach(searchResults) { city in
+                NavigationLink(city.province_name) {
+                    CityRadiosView(selectedSegment: Segment.city, province_code: city.province_code)
+                }
             }
         }
-        .searchable(text: $searchText)
+        .searchable(text: $searchText, placement: .navigationBarDrawer)
+        .loadingState($isLoading)
+        .emptyState(searchResults.isEmpty && !isLoading, emptyContent: {
+            Text("No Cities")
+                .font(.title3)
+                .foregroundColor(Color.secondary)
+        })
         .onAppear(perform: {
             requestCities()
         })
@@ -33,7 +42,9 @@ struct CityListView: View {
     
     // 请求省市列表
     private func requestCities() {
+        isLoading = true
         XMNetwork.shared.provider.request(.provinces) { result in
+            self.isLoading = false
             switch result {
             case .success(let res):
                 do {

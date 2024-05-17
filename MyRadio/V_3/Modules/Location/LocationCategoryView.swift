@@ -32,15 +32,19 @@ struct LocationCategoryView: View {
     @State private var selectedSegment: Segment = .country
     var body: some View {
         NavigationStack {
-            List(Segment.allCases, id: \.self) { option in
-                NavigationLink {
-                    if option == .city {
-                        CityListView()
-                    } else {
-                        CityRadiosView(selectedSegment: option)
+            List {
+                ForEach(Segment.allCases, id: \.self) { option in
+                    NavigationLink {
+                        if option == .city {
+                            CityListView()
+                                .toolbar(.hidden, for: .tabBar)
+                        } else {
+                            CityRadiosView(selectedSegment: option)
+                                .toolbar(.hidden, for: .tabBar)
+                        }
+                    } label: {
+                        Text(option.rawValue)
                     }
-                } label: {
-                    Text(option.rawValue)
                 }
             }
             .navigationTitle("Location")

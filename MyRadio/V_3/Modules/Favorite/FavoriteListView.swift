@@ -10,31 +10,12 @@ import CoreData
 
 struct FavoriteListView: View {
     @Environment(\.managedObjectContext) var moc
+    @State private var isLoading: Bool = false
     @State private var radios = [RadioDB]()
     @State var editMode: EditMode = .inactive
     
     var body: some View {
         NavigationStack {
-            contentView()
-            .navigationTitle("Favorite")
-            .toolbar(content: {
-                Button(action: {
-                    editMode = editMode.isEditing ? .inactive : .active
-                }, label: {
-                    Text("编辑")
-                })
-            })
-        }
-        .onAppear(perform: {
-            getFavorits()
-        })
-    }
-    
-    @ViewBuilder
-    private func contentView() -> some View {
-        if radios.isEmpty {
-            Text("暂无收藏")
-        } else {
             List {
                 ForEach(radios, id: \.radio_id) { radio in
                     NavigationLink {
@@ -57,15 +38,33 @@ struct FavoriteListView: View {
                     }
                 }
             }
+            .loadingState($isLoading)
+            .emptyState(radios.isEmpty, emptyContent: {
+                Text("暂无收藏")
+                    .font(.title3)
+                    .foregroundColor(Color.secondary)
+            })
             .environment(\.editMode, $editMode)
             .onDisappear(perform: {
                 try? moc.save()
             })
+            .navigationTitle("Favorite")
+            .toolbar(content: {
+                Button(action: {
+                    editMode = editMode.isEditing ? .inactive : .active
+                }, label: {
+                    Text(editMode.isEditing ? "编辑" : "完成")
+                })
+            })
         }
+        .onAppear(perform: {
+            getFavorits()
+        })
     }
     
     // 获取数据库中收藏列表
     private func getFavorits() {
+        self.isLoading = true
         let request = NSFetchRequest<RadioDB>(entityName: "RadioDB")
         request.predicate = NSPredicate(format: "favorite == true")
         let sortDescriptor = NSSortDescriptor(key: "sort", ascending: true)
@@ -73,6 +72,7 @@ struct FavoriteListView: View {
         guard let radios = try? moc.fetch(request) else {
             return
         }
+        self.isLoading = false
         self.radios = radios
     }
     
