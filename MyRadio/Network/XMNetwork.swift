@@ -33,7 +33,7 @@ struct XMNetwork {
 
 enum XMNetworkType {
     case radio_categories // 获取广播电台的分类
-    case get_radios_by_category(id: Int, page: Int = 1, count: Int = 200) // 获取电台分类下的广播电台
+    case get_radios_by_category(id: Int, page: Int = 1, count: Int = 20) // 获取电台分类下的广播电台
     case get_playing_program(radio_id: Int) // 获取某个电台正在广播的节目
     case provinces // 获取广播省市列表
     case radios(radio_type: Int, province_code: Int? = nil, page: Int = 1, count: Int = 20) // 获取广播电台省市列表

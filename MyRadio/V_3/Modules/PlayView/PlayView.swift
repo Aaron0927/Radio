@@ -84,7 +84,6 @@ struct PlayView: View {
                         }
                     } label: {
                         timerView()
-                            .frame(width: 32, height: 32)
                     }
                     .frame(maxWidth: .infinity)
                 }
@@ -113,10 +112,11 @@ struct PlayView: View {
     private func timerView() -> some View {
         if playViewModel.remainingTime > 0 {
             TimeFormatter(playViewModel.remainingTime)
-                .padding(5)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 5)
                 .background(Color(hex: "#22D453"))
-                .clipShape(RoundedRectangle(cornerRadius: 5))
                 .foregroundStyle(Color.white)
+                .clipShape(RoundedRectangle(cornerRadius: 5))
         } else {
             Image(systemName: "moon.zzz.fill")
                 .resizable()
